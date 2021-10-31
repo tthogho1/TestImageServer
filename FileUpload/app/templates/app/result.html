@@ -1,0 +1,16 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8" />
+<title>result</title>
+</head>
+<body>
+<ul>
+    {% for key, value in result.items %}
+    <ul>
+        <li>{{ key }} - {{ value }}</li>
+    </ul>
+    {% endfor %}
+</ul>
+</body>
+</html>
