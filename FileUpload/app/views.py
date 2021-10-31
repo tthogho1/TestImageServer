@@ -27,6 +27,20 @@ def file_upload(request):
     return render(request, 'app/upload.html', {'form': form})
 #
 #
+def get_vector(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            # sys.stderr.write("*** file_upload \n")
+            file_obj = request.FILES['file']
+            handle_uploaded_file(file_obj)
+            imageAnalysis = ImageAnalysis()
+            result = imageAnalysis.getVector(file_obj.name)
+            return HttpResponse(result)
+    else:
+        form = UploadFileForm()
+    return render(request, 'app/upload.html', {'form': form})
+
 # ------------------------------------------------------------------
 def handle_uploaded_file(file_obj):
     file_path = file_obj.name 
@@ -35,9 +49,3 @@ def handle_uploaded_file(file_obj):
         for chunk in file_obj.chunks():
             destination.write(chunk)
  
-# ------------------------------------------------------------------
-def success(request):
-    str_out = "Success!<p />"
-    str_out += "成功<p />"
-    return HttpResponse(str_out)
-# ------------------------------------------------------------------
