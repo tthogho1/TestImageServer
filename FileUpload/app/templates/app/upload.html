@@ -3,55 +3,77 @@
 <head>
 <meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8" />
 <script src="/static/app/scripts/jquery-1.10.2.js"></script>
-<title>ANALYZE FILE</title>
+<title>ANALYZE IMAGE FILE</title>
 </head>
 <body>
-    <h1>ANALYZE IMAGE FILE</h1>
-    <form id="upload-file" method="POST" enctype="multipart/form-data">
-        <div id="drop-zone" style="border: 1px solid; padding: 30px;">
-        <p> drag and drop </p>
-        <input type="file" name="file" id="file-input">
+    <h3>analyze image file</h3>
+    <div>
+        <button type="button" id="compare-btn" style="float:left;margin-right:10px">compare</button>
+        <div style="float:left">similarity: </div><div id="similarity" style="float:left"></div>
     </div>
-    </form>
-     <button type="button" id="upload-file-btn">analyze</button>
-     <button type="button" id="get-vector-btn">get vector</button>
-    <h2>upload image</h2>
-    <div class="left-column" id="preview" style="float:left"></div>
-    <div class="right-column" id="result" style="float:right"></div>
-<hr />
+    <div style="clear:both">
+        <form id="upload-file" method="POST" enctype="multipart/form-data">
+            <div id="drop-zone" style="float:left;border: 1px solid; padding: 30px;">
+                <p> drag and drop image file </p>
+                <div class="left-column" id="preview"></div>
+                <input type="file" name="file" id="file-input" style="display:none">
+            </div>
+            <div id="drop-zone2" style="float:left;border: 1px solid; padding: 30px;">
+                <p> drag and drop image file </p>
+                <div class="left-column" id="preview2"></div>
+                <input type="file" name="file" id="file-input2" style="display:none">
+            </div>
+        </form>
+    </div>
+    <div style="clear:both">
+        <div id="result" ></div>
+    </div>
+<hr/>
 <script type="text/javascript">
 
     var dropZone = document.getElementById('drop-zone');
     var preview = document.getElementById('preview');
     var fileInput = document.getElementById('file-input');
 
-    dropZone.addEventListener('dragover', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        this.style.background = '#e1e7f0';
-    }, false);
 
-    dropZone.addEventListener('dragleave', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        this.style.background = '#ffffff';
-    }, false);
+    dragAndDropFile(dropZone, fileInput, preview);
 
-    fileInput.addEventListener('change', function () {
-        previewFile(this.files[0]);
-    });
+    var dropZone2 = document.getElementById('drop-zone2');
+    var preview2 = document.getElementById('preview2');
+    var fileInput2 = document.getElementById('file-input2');
 
-    dropZone.addEventListener('drop', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        this.style.background = '#ffffff'; 
-        var files = e.dataTransfer.files;
-        if (files.length > 1) return alert('only one file for upload');
-        fileInput.files = files;
-        previewFile(files[0]);
-    }, false);
+    dragAndDropFile(dropZone2, fileInput2, preview2);
 
-    function previewFile(file) {
+
+    function dragAndDropFile(dropZone,fileInput,preview) {
+        dropZone.addEventListener('dragover', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            this.style.background = '#e1e7f0';
+        }, false);
+
+        dropZone.addEventListener('dragleave', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            this.style.background = '#ffffff';
+        }, false);
+
+        fileInput.addEventListener('change', function () {
+            previewFile(this.files[0],preview);
+        });
+
+        dropZone.addEventListener('drop', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            this.style.background = '#ffffff';
+            var files = e.dataTransfer.files;
+            if (files.length > 1) return alert('only one file for upload');
+            fileInput.files = files;
+            previewFile(files[0],preview);
+        }, false);
+    }
+
+    function previewFile(file,preview) {
         var fr = new FileReader();
         fr.readAsDataURL(file);
         fr.onload = function() {
@@ -59,7 +81,9 @@
             img.setAttribute('src', fr.result);
             preview.innerHTML = '';
             preview.appendChild(img);
+            $("#similarity").html("");
         };
+        uploadFiles();
     }
 </script>
 <script>
@@ -72,7 +96,7 @@
                 contentType: false,
                 cache: false,
                 processData: false,
-                async: false
+                async: true
         }).done((data, textStatus, jqXHR)=>{
                 $(results).html(data);
         }).fail((jqXHR, textStatus, errorThrown) => {
@@ -80,24 +104,22 @@
         });
     }
 
+    function uploadFiles() {
+        var form_data = new FormData($('#upload-file')[0]);
+        var url = '/file_upload/rekognition'; 
+        var results = '#result';
+
+        ajaxPost(url,results,form_data);
+    }
+
     $(function () {
-        $('#upload-file-btn').click(function () {
+        $('#compare-btn').click(function () {
             var form_data = new FormData($('#upload-file')[0]);
-            var url = '/file_upload/rekognition'; 
-            var results = '#result';
+            var url = '/file_upload/compare'; 
+            var results = '#similarity';
 
             ajaxPost(url,results,form_data);
         });
-
-        $('#get-vector-btn').click(function () {
-            var form_data = new FormData($('#upload-file')[0]);
-            var url = '/file_upload/getvector'; 
-            var results = '#result';
-
-            ajaxPost(url,results,form_data);
-        });
-
-
     });
 </script>
 </body >

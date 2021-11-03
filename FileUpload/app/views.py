@@ -10,36 +10,56 @@ from .ImageAnalysis import ImageAnalysis
 
 # ------------------------------------------------------------------
 def file_upload(request):
+    #
+    #
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
+        #
         if form.is_valid():
-            # sys.stderr.write("*** file_upload \n")
-            file_obj = request.FILES['file']
-            handle_uploaded_file(file_obj)
             imageAnalysis = ImageAnalysis()
-            result = imageAnalysis.getOutput(file_obj.name)
-            result_dict = {k: v.item() for k, v in result.items()}
-            json_str =json.dumps(result_dict,ensure_ascii=False);
-            print(json_str)
+            #
+            resultList = []
+            for file_obj in request.FILES.getlist('file'):
+                handle_uploaded_file(file_obj)
+                #
+                result = imageAnalysis.getOutput(file_obj.name)
+                result_dict = {k: v.item() for k, v in result.items()}
+                resultList.append(result_dict)
+                #json_str =json.dumps(result_dict,ensure_ascii=False);
+                json_str =json.dumps(resultList,ensure_ascii=False);
+                print(json_str)
+         
             return HttpResponse(json_str)
     else:
         form = UploadFileForm()
+    #
+    #
     return render(request, 'app/upload.html', {'form': form})
 #
 #
-def get_vector(request):
+def get_vector(file_obj):
+    imageAnalysis = ImageAnalysis()
+    result = imageAnalysis.getVector(file_obj.name)
+    print(result)
+    return result
+#
+#
+def compare(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            # sys.stderr.write("*** file_upload \n")
-            file_obj = request.FILES['file']
-            handle_uploaded_file(file_obj)
             imageAnalysis = ImageAnalysis()
-            result = imageAnalysis.getVector(file_obj.name)
-            return HttpResponse(result)
-    else:
-        form = UploadFileForm()
-    return render(request, 'app/upload.html', {'form': form})
+            vectorList = []
+            for file_obj in request.FILES.getlist('file'):
+                handle_uploaded_file(file_obj)
+                imgVector = get_vector(file_obj)
+                vectorList.append(imgVector)
+
+            result = imageAnalysis.cosineSimilarity(vectorList[0],vectorList[1])
+            str = result.item()
+            #result_dict = {k: v.item() for k, v in result.items()}
+            #json_str =json.dumps(result_dict,ensure_ascii=False);
+            return HttpResponse(str)
 
 # ------------------------------------------------------------------
 def handle_uploaded_file(file_obj):
