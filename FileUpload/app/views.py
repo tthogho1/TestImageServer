@@ -12,7 +12,6 @@ from .ImageAnalysis import ImageAnalysis
 model_kind="resnet50"
 def file_upload(request):
     #
-    #
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         #
@@ -22,13 +21,11 @@ def file_upload(request):
             resultList = []
             for file_obj in request.FILES.getlist('file'):
                 handle_uploaded_file(file_obj)
-                #
                 result = imageAnalysis.getOutput(file_obj.name)
                 result_dict = {k: v.item() for k, v in result.items()}
                 resultList.append(result_dict)
-                #json_str =json.dumps(result_dict,ensure_ascii=False);
-                json_str =json.dumps(resultList,ensure_ascii=False);
-                print(json_str)
+                delete_uploaded_file(file_obj)
+            json_str =json.dumps(resultList,ensure_ascii=False)
          
             return HttpResponse(json_str)
     else:
@@ -55,13 +52,14 @@ def compare(request):
                 handle_uploaded_file(file_obj)
                 imgVector = get_vector(file_obj)
                 vectorList.append(imgVector)
+                delete_uploaded_file(file_obj)
 
             result = imageAnalysis.cosineSimilarity(vectorList[0],vectorList[1])
             str = result.item()
             #result_dict = {k: v.item() for k, v in result.items()}
             #json_str =json.dumps(result_dict,ensure_ascii=False);
             return HttpResponse(str)
-
+        
 # ------------------------------------------------------------------
 def handle_uploaded_file(file_obj):
     file_path = file_obj.name 
@@ -69,4 +67,7 @@ def handle_uploaded_file(file_obj):
     with open('media/' + file_path, 'wb+') as destination:
         for chunk in file_obj.chunks():
             destination.write(chunk)
- 
+
+def delete_uploaded_file(file_obj):
+    file_path = file_obj.name
+    os.remove('media/' + file_path)
