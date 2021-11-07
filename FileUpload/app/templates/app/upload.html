@@ -4,6 +4,27 @@
 <meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8" />
 <script src="/static/app/scripts/jquery-1.10.2.js"></script>
 <title>ANALYZE IMAGE FILE</title>
+<style media="screen">
+#nowLoading {
+  display: table;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #fff;
+  opacity: 0.8;
+}
+ 
+#innerMsg {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  padding-top: 140px;
+  z-index:100;
+  background: url("/static/app/img/38_cycle_forty_24.gif") center center no-repeat;
+}
+</style>
 </head>
 <body>
     <h3>analyze image file</h3>
@@ -13,12 +34,12 @@
     </div>
     <div style="clear:both">
         <form id="upload-file" method="POST" enctype="multipart/form-data">
-            <div id="drop-zone" style="float:left;border: 1px solid; padding: 30px;">
+            <div id="drop-zone" style="text-align: center;width:40%;float:left;border: 1px solid; ">
                 <p> drag and drop image file </p>
                 <div class="left-column" id="preview"></div>
                 <input type="file" name="file" id="file-input" style="display:none">
             </div>
-            <div id="drop-zone2" style="float:left;border: 1px solid; padding: 30px;">
+            <div id="drop-zone2" style="text-align: center;width:40%;float:left;border: 1px solid; ">
                 <p> drag and drop image file </p>
                 <div class="left-column" id="preview2"></div>
                 <input type="file" name="file" id="file-input2" style="display:none">
@@ -26,9 +47,11 @@
         </form>
     </div>
     <div style="clear:both">
-        <div id="result" ></div>
+        <div id="result1" style="width:40%;float:left">
+        </div>
+        <div id="result2" style="width:40%;float:left">
+        </div>
     </div>
-<hr/>
 <script type="text/javascript">
 
     var dropZone = document.getElementById('drop-zone');
@@ -87,7 +110,10 @@
     }
 </script>
 <script>
-    function ajaxPost(url,results,form_data) {
+    function ajaxPost(url, results, form_data) {
+
+        dispLoading("processing....");
+
         $.ajax({
                 type: 'POST',
                 url: url,
@@ -97,30 +123,74 @@
                 cache: false,
                 processData: false,
                 async: true
-        }).done((data, textStatus, jqXHR)=>{
-                $(results).html(data);
+        }).done((data, textStatus, jqXHR) => {
+            results(data);
+
         }).fail((jqXHR, textStatus, errorThrown) => {
-                alert("API error " + textStatus);
+            alert("API error " + textStatus);
+        }).always(function (data) {
+            removeLoading();
         });
+    }
+
+    function similaritySet(data) {
+        $("#similarity").html(data);
+    }
+
+    function resultSet(data) {
+        let jsonObj = JSON.parse(data);
+        for (i = 0; i < jsonObj.length; i++) {
+            let parentId = "result1"; 
+            if (i==1) {
+                parentId = "result2";
+            } 
+
+            obj = jsonObj[i];
+            let parentDiv = document.getElementById(parentId);
+            parentDiv.innerHTML="";
+            for (let key in obj) {
+                let newElement = document.createElement("div");
+                let newContent = document.createTextNode(key + ":" + obj[key]);
+                newElement.appendChild(newContent);
+                parentDiv.appendChild(newElement);
+                    // console.log('key:' + key + ' value:' + obj[key]);
+            }
+        }  
     }
 
     function uploadFiles() {
         var form_data = new FormData($('#upload-file')[0]);
         var url = '/file_upload/rekognition'; 
-        var results = '#result';
+        // var results = '#result';
 
-        ajaxPost(url,results,form_data);
+        ajaxPost(url,resultSet,form_data);
     }
 
     $(function () {
         $('#compare-btn').click(function () {
             var form_data = new FormData($('#upload-file')[0]);
             var url = '/file_upload/compare'; 
-            var results = '#similarity';
+            // var results = '#similarity';
 
-            ajaxPost(url,results,form_data);
+            ajaxPost(url,similaritySet,form_data);
         });
     });
+</script>
+<script>
+function dispLoading(msg){
+    if (msg === undefined) {
+        msg = "";
+    }
+    var innerMsg = "<div id='innerMsg'>" + msg + "</div>";  
+  
+    if($("#nowLoading").length == 0){
+        $("body").append("<div id='nowLoading'>" + innerMsg + "</div>");
+    }
+}
+ 
+function removeLoading(){
+    $("#nowLoading").remove();
+}
 </script>
 </body >
 </html>

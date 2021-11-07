@@ -9,6 +9,7 @@ import json
 from .ImageAnalysis import ImageAnalysis
 
 # ------------------------------------------------------------------
+model_kind="resnet50"
 def file_upload(request):
     #
     #
@@ -16,7 +17,7 @@ def file_upload(request):
         form = UploadFileForm(request.POST, request.FILES)
         #
         if form.is_valid():
-            imageAnalysis = ImageAnalysis()
+            imageAnalysis = ImageAnalysis(model_kind)
             #
             resultList = []
             for file_obj in request.FILES.getlist('file'):
@@ -38,7 +39,7 @@ def file_upload(request):
 #
 #
 def get_vector(file_obj):
-    imageAnalysis = ImageAnalysis()
+    imageAnalysis = ImageAnalysis(model_kind)
     result = imageAnalysis.getVector(file_obj.name)
     print(result)
     return result
@@ -48,7 +49,7 @@ def compare(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            imageAnalysis = ImageAnalysis()
+            imageAnalysis = ImageAnalysis(model_kind)
             vectorList = []
             for file_obj in request.FILES.getlist('file'):
                 handle_uploaded_file(file_obj)

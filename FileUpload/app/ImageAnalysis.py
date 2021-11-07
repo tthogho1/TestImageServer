@@ -22,10 +22,15 @@ from torchvision.datasets.utils import download_url
 
 
 class ImageAnalysis:
-    def __init__(self):
-        self.name=""
+    def __init__(self,model_kind):
         self.device = self.get_device(True)
-        self.model = torchvision.models.resnet50(pretrained=True).to(self.device)
+        if model_kind == "resnet50" :
+            self.model = torchvision.models.resnet50(pretrained=True).to(self.device)
+            self.OUTPUTSIZE = 2048
+        else:
+            self.model = torchvision.models.resnet18(pretrained=True).to(self.device)
+            self.OUTPUTSIZE = 512
+        self.name=""
         self.transform = transforms.Compose(
             [
                 transforms.Resize(256),  # 
@@ -51,7 +56,7 @@ class ImageAnalysis:
             download_url("https://git.io/JebAs", "data", "imagenet_class_index.json")
         with open("data/imagenet_class_index.json",'r', encoding="utf-8") as f:
             data = json.load(f)
-            class_names = [x["ja"] for x in data]
+            class_names = [x["en"] for x in data]
         return class_names
 
     def getOutput(self,filename):
@@ -82,7 +87,7 @@ class ImageAnalysis:
         self.model.eval()
 
         t_img = Variable(normalize(to_tensor(scaler(img))).unsqueeze(0))
-        my_embedding = torch.zeros(2048)
+        my_embedding = torch.zeros(self.OUTPUTSIZE)
         def copy_data(m, i, o):
             my_embedding.copy_(o.data.reshape(o.data.size(1)))
         h = self.layer.register_forward_hook(copy_data)
