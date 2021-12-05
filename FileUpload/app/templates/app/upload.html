@@ -34,6 +34,12 @@
     </div>
     <div style="clear:both">
         <form id="upload-file" method="POST" enctype="multipart/form-data">
+            <div>
+             <select id="analyze_model" name="analyze_model">
+                <option value="resnet18">resnet 18</option>
+                <option value="resnet50">resnet 50</option>
+            </select>
+            </div>
             <div id="drop-zone" style="text-align: center;width:40%;float:left;border: 1px solid; ">
                 <p> drag and drop image file </p>
                 <div class="left-column" id="preview"></div>

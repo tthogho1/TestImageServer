@@ -3,7 +3,7 @@ from django.shortcuts import render
 from .forms import UploadFileForm
 from django.http import HttpResponse
 from django.template import loader
-
+import os
 import sys
 import json
 from .ImageAnalysis import ImageAnalysis
@@ -15,6 +15,7 @@ def file_upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         #
+        model_kind= request.POST.get('analyze_model',None)
         if form.is_valid():
             imageAnalysis = ImageAnalysis(model_kind)
             #
@@ -44,6 +45,7 @@ def get_vector(file_obj):
 #
 def compare(request):
     if request.method == 'POST':
+        model_kind= request.POST.get('analyze_model',None)
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             imageAnalysis = ImageAnalysis(model_kind)
