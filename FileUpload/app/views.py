@@ -7,9 +7,12 @@ import os
 import sys
 import json
 from .ImageAnalysis import ImageAnalysis
+from django.core.cache import cache
 
 # ------------------------------------------------------------------
 model_kind="resnet50"
+G_DICTIONARY= {}
+# ------------------------------------------------------------------
 def file_upload(request):
     #
     if request.method == 'POST':
@@ -41,6 +44,29 @@ def get_vector(file_obj):
     result = imageAnalysis.getVector(file_obj.name)
     print(result)
     return result
+#
+#
+#
+def add_feature_vector(request):
+    str="NG"
+    imgVectorDictionary = cache.get('imgVector')
+    if imgVectorDictionary == null:
+        imgVectorDictionary = {}
+        cache.set('imgVector',imgVectorDictionary)
+
+    if request.method == 'POST':
+        model_kind= request.POST.get('analyze_model',None)
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            imageAnalysis = ImageAnalysis(model_kind)
+            file_obj = request.FILES.getlist('file')
+            handle_uploaded_file(file_obj)
+            imgVector = get_vector(file_obj)
+            vectorList.append(imgVector)
+            delete_uploaded_file(file_obj)
+            str="OK"
+    
+    return HttpResponse(str)
 #
 #
 def compare(request):
