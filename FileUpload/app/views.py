@@ -47,24 +47,25 @@ def get_vector(file_obj):
 #
 #
 #
-def add_feature_vector(request):
+def cache_feature_vector(request):
     str="NG"
     imgVectorDictionary = cache.get('imgVector')
-    if imgVectorDictionary == null:
+    if imgVectorDictionary == None:
         imgVectorDictionary = {}
         cache.set('imgVector',imgVectorDictionary)
 
     if request.method == 'POST':
-        model_kind= request.POST.get('analyze_model',None)
+        model_kind= request.POST.get('analyze_model',None) # no param
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            imageAnalysis = ImageAnalysis(model_kind)
-            file_obj = request.FILES.getlist('file')
-            handle_uploaded_file(file_obj)
-            imgVector = get_vector(file_obj)
-            vectorList.append(imgVector)
-            delete_uploaded_file(file_obj)
-            str="OK"
+            for file_obj in request.FILES.getlist('file'): # one file only
+                imageAnalysis = ImageAnalysis(model_kind)
+                file_obj = request.FILES.getlist('file')
+                handle_uploaded_file(file_obj)
+                imgVector = imageAnalysis.getVector(file_obj.name)
+                imgVectorDictionary(file_obj.name,imgVector)
+                delete_uploaded_file(file_obj)
+                str="OK"
     
     return HttpResponse(str)
 #

@@ -85,6 +85,7 @@ DATABASES = {
 
 CACHES = {
     'default': {
+        'TIMEOUT': None ,
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://localhost:6379/',
         'OPTIONS': {
@@ -92,7 +93,6 @@ CACHES = {
         }
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
