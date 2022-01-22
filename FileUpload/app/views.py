@@ -39,7 +39,33 @@ def file_upload(request):
     return render(request, 'app/upload.html', {'form': form})
 #
 #
-def get_vector(file_obj):
+#
+def get_similar_image(request):
+    form = UploadFileForm(request.POST, request.FILES)
+    if form.is_valid():
+        model_kind= request.POST.get('analyze_model',None) # no param
+        imageAnalysis = ImageAnalysis(model_kind)
+        #
+        t_vector=""
+        for file_obj in request.FILES.getlist('file'): # only one file
+            handle_uploaded_file(file_obj)
+            t_vector = imageAnalysis.getVector(file_obj.name)
+            delete_uploaded_file(file_obj) 
+
+        imgVectorDictionary = cache.get('imgVector')
+        maxSimilarity = 0
+        for k, v in imgVectorDictionary.items():
+            result = imageAnalysis.cosineSimilarity(t_vector,v)
+            t_Similarity = result.item()
+            if (t_Similarity > maxSimilarity  ):
+                maxSimilarity = t_Simirarity
+                key = k
+
+    return HttpResponse(maxSimilarity)
+#
+#
+#
+def get_vector(file_obj,model_kind):
     imageAnalysis = ImageAnalysis(model_kind)
     result = imageAnalysis.getVector(file_obj.name)
     print(result)
@@ -58,12 +84,12 @@ def cache_feature_vector(request):
         model_kind= request.POST.get('analyze_model',None) # no param
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
+            imageAnalysis = ImageAnalysis(model_kind)
             for file_obj in request.FILES.getlist('file'): # one file only
-                imageAnalysis = ImageAnalysis(model_kind)
-                file_obj = request.FILES.getlist('file')
                 handle_uploaded_file(file_obj)
                 imgVector = imageAnalysis.getVector(file_obj.name)
-                imgVectorDictionary(file_obj.name,imgVector)
+                imgVectorDictionary[file_obj.name]=imgVector
+                cache.set('imgVector',imgVectorDictionary)
                 delete_uploaded_file(file_obj)
                 str="OK"
     
@@ -79,7 +105,7 @@ def compare(request):
             vectorList = []
             for file_obj in request.FILES.getlist('file'):
                 handle_uploaded_file(file_obj)
-                imgVector = get_vector(file_obj)
+                imgVector = get_vector(file_obj,model_kind)
                 vectorList.append(imgVector)
                 delete_uploaded_file(file_obj)
 

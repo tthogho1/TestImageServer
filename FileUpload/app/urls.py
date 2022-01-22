@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('', views.file_upload, name='file_upload'),
     path('rekognition', views.file_upload, name='file_upload'),
-    path('addFeatureVector', views.add_feature_vector, name='add_feature_vector'),
+    path('getSimilarImage', views.get_similar_image, name='get_similar_image'),
+    path('cacheFeatureVector', views.cache_feature_vector, name='cache_feature_vector'),
     path('compare', views.compare, name='compare'),
 ]
