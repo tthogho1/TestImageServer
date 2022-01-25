@@ -8,6 +8,7 @@ import sys
 import json
 from .ImageAnalysis import ImageAnalysis
 from django.core.cache import cache
+from django.http import FileResponse
 
 # ------------------------------------------------------------------
 model_kind="resnet50"
@@ -37,6 +38,14 @@ def file_upload(request):
     #
     #
     return render(request, 'app/upload.html', {'form': form})
+#
+#
+#
+def file_download(request,F):
+    file_path = 'media/' + F
+    filename = F
+    return FileResponse(open(file_path, "rb"), as_attachment=False, filename=filename)
+
 #
 #
 #
@@ -90,7 +99,7 @@ def cache_feature_vector(request):
                 imgVector = imageAnalysis.getVector(file_obj.name)
                 imgVectorDictionary[file_obj.name]=imgVector
                 cache.set('imgVector',imgVectorDictionary)
-                delete_uploaded_file(file_obj)
+             #   delete_uploaded_file(file_obj)
                 str="OK"
     
     return HttpResponse(str)
