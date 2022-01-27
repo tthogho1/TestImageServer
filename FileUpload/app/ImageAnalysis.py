@@ -41,7 +41,11 @@ class ImageAnalysis:
         )
         self.class_names = self.get_classes()
         self.layer = self.model._modules.get('avgpool')
+        self.folder="media/"
 
+
+    def set_folder(self,path):
+        self.folder=path
 
     def get_device(self,use_gpu):
         if use_gpu and torch.cuda.is_available():
@@ -60,7 +64,7 @@ class ImageAnalysis:
         return class_names
 
     def getOutput(self,filename):
-        img = Image.open("media/" + filename)
+        img = Image.open(self.folder + filename)
         inputs = self.transform(img)
         inputs = inputs.unsqueeze(0).to(self.device)
         self.model.eval()
@@ -79,7 +83,7 @@ class ImageAnalysis:
         return result
 
     def getVector(self,filename):
-        img = Image.open("media/" + filename)
+        img = Image.open(self.folder + filename)
         scaler = transforms.Scale((224, 224))
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
