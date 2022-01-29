@@ -67,15 +67,29 @@ def get_similar_image(request):
 
             imgVectorDictionary = cache.get('imgVector')
             maxSimilarity = 0
+            l=[]
             for k, v in imgVectorDictionary.items():
                 result = imageAnalysis.cosineSimilarity(t_vector,v)
                 t_Similarity = result.item()
-                if (t_Similarity > maxSimilarity  ):
-                    maxSimilarity = t_Similarity
-                    key = k
+                t_obj ={}
+                t_obj['file']=k
+                t_obj['similarity']=t_Similarity
+                l_obj=None
+                for i in range(3):
+                    try: 
+                        l_obj = l[i]
+                    except IndexError:
+                        pass
+                    if (l_obj == None):
+                        l.insert(i,t_obj)
+                        break
+                    elif ( t_Similarity > l_obj['similarity'] ):
+                        l.insert(i,t_obj)
+                        if len(l) > 3 :
+                            del l[3]
+                        break
 
-            d = dict(file=key,similarity=maxSimilarity)
-            json_string = json.dumps(d)
+            json_string = json.dumps(l)
             return HttpResponse(json_string)
         else:
             t_vector=""
