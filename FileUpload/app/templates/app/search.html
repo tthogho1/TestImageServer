@@ -41,10 +41,19 @@
         </form>
     </div>
     <div style="clear:both">
-        <label>simmilarity</label><input id="similarity" type="text" value="" style="width:100px;border:0px" readonly/>
+        <label>simmilarity</label><input id="similarity1" type="text" value="" style="width:100px;border:0px" readonly/>
         <div>
-        <img id="result" border="0" src="" width="128" height="128" style="display:none" />
+        <img id="result1" border="0" src="" style="display:none" />
         </div>
+        <label>simmilarity</label><input id="similarity2" type="text" value="" style="width:100px;border:0px" readonly/>
+        <div>
+        <img id="result2" border="0" src="" style="display:none" />
+        </div>
+        <label>simmilarity</label><input id="similarity3" type="text" value="" style="width:100px;border:0px" readonly/>
+        <div>
+        <img id="result3" border="0" src="" style="display:none" />
+        </div>
+
     </div>
 <script type="text/javascript">
 
@@ -106,6 +115,7 @@
                 contentType: false,
                 cache: false,
                 processData: false,
+                timeout: 30000,
                 async: true
         }).done((data, textStatus, jqXHR) => {
             results(data);
@@ -117,6 +127,15 @@
         });
     }
 
+    function setImage(imgid,simid,image,similarity) {
+        $(imgid).attr("src", './download/' + image);
+        $(imgid).show();
+
+        $(simid).val(similarity);
+    }
+
+
+
     function resultSet(data) {
         let jsonObj = JSON.parse(data);
 
@@ -125,12 +144,15 @@
             var obj = jsonObj[i];
             var image = jsonObj[i].file;
             var similarity = jsonObj[i].similarity;
-            $("#result").attr("src", './download/' + image);
-            $("#result").show();
-
-            $("#similarity").val(similarity);
-
-            return;
+            if (i == 0) {
+                setImage("#result1","#similarity1",image,similarity);
+            } 
+            if (i == 1) {
+                setImage("#result2","#similarity2",image,similarity);
+            }
+            if (i == 2) {
+                setImage("#result3", "#similarity3", image,similarity);
+            }
         }  
     }
 
