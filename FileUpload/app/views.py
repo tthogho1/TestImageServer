@@ -9,6 +9,7 @@ import json
 from .ImageAnalysis import ImageAnalysis
 from django.core.cache import cache
 from django.http import FileResponse
+from threading import Lock
 
 # ------------------------------------------------------------------
 model_kind="resnet50"
@@ -50,6 +51,7 @@ def file_download(request,F):
 #
 #
 #
+
 def get_similar_image(request):
 
     if request.method == 'POST':
@@ -60,10 +62,13 @@ def get_similar_image(request):
             imageAnalysis.set_folder("tmp/")
             #
             t_vector=""
+            saveFileNm=""
             for file_obj in request.FILES.getlist('file'): # only one file
                 handle_uploaded_file(file_obj,"tmp/")
                 t_vector = imageAnalysis.getVector(file_obj.name)
+                saveFileNm=file_obj.name
                 delete_uploaded_file(file_obj,"tmp/") 
+                break
 
             imgVectorDictionary = cache.get('imgVector')
             maxSimilarity = 0
@@ -71,6 +76,8 @@ def get_similar_image(request):
             for k, v in imgVectorDictionary.items():
                 result = imageAnalysis.cosineSimilarity(t_vector,v)
                 t_Similarity = result.item()
+                if (k==saveFileNm) :
+                    print(t_Similarity)
                 t_obj ={}
                 t_obj['file']=k
                 t_obj['similarity']=t_Similarity
@@ -111,13 +118,9 @@ def get_vector(file_obj,model_kind):
 #
 #
 #
+lock = Lock()
 def cache_feature_vector(request):
     str="NG"
-    imgVectorDictionary = cache.get('imgVector')
-    if imgVectorDictionary == None:
-        imgVectorDictionary = {}
-        cache.set('imgVector',imgVectorDictionary)
-
     if request.method == 'POST':
         model_kind= request.POST.get('analyze_model',None) # no param
         form = UploadFileForm(request.POST, request.FILES)
@@ -126,11 +129,18 @@ def cache_feature_vector(request):
             for file_obj in request.FILES.getlist('file'): # one file only
                 handle_uploaded_file(file_obj,'media/')
                 imgVector = imageAnalysis.getVector(file_obj.name)
-                imgVectorDictionary[file_obj.name]=imgVector
-                cache.set('imgVector',imgVectorDictionary)
-             #   delete_uploaded_file(file_obj)
-                str="OK"
-    
+                if lock.acquire():
+                    try:
+                        imgVectorDictionary = cache.get('imgVector')
+                        if imgVectorDictionary == None:
+                            imgVectorDictionary = {}
+                        imgVectorDictionary[file_obj.name]=imgVector
+                        print(len(imgVectorDictionary))
+                        cache.set('imgVector',imgVectorDictionary)
+                        str="OK"
+                    finally:
+                        lock.release()
+                break    
     return HttpResponse(str)
 #
 #

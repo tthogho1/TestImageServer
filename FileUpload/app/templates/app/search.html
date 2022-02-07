@@ -41,15 +41,18 @@
         </form>
     </div>
     <div style="clear:both">
-        <label>simmilarity</label><input id="similarity1" type="text" value="" style="width:100px;border:0px" readonly/>
+        <label>file1</label><input id="file1" type="text" value="" style="border:0px" readonly/>
+        <label>simmilarity</label><input id="similarity1" type="text" value="" style="border:0px" readonly/>
         <div>
         <img id="result1" border="0" src="" style="display:none" />
         </div>
-        <label>simmilarity</label><input id="similarity2" type="text" value="" style="width:100px;border:0px" readonly/>
+        <label>file2</label><input id="file2" type="text" value="" style="border:0px" readonly/>
+        <label>simmilarity</label><input id="similarity2" type="text" value="" style="border:0px" readonly/>
         <div>
         <img id="result2" border="0" src="" style="display:none" />
         </div>
-        <label>simmilarity</label><input id="similarity3" type="text" value="" style="width:100px;border:0px" readonly/>
+        <label>file3</label><input id="file3" type="text" value="" style="border:0px" readonly/>
+        <label>simmilarity</label><input id="similarity3" type="text" value="" style="border:0px" readonly/>
         <div>
         <img id="result3" border="0" src="" style="display:none" />
         </div>
@@ -127,10 +130,10 @@
         });
     }
 
-    function setImage(imgid,simid,image,similarity) {
+    function setImage(imgid,simid,image,similarity,fileid) {
         $(imgid).attr("src", './download/' + image);
         $(imgid).show();
-
+        $(fileid).val(image);
         $(simid).val(similarity);
     }
 
@@ -145,13 +148,13 @@
             var image = jsonObj[i].file;
             var similarity = jsonObj[i].similarity;
             if (i == 0) {
-                setImage("#result1","#similarity1",image,similarity);
+                setImage("#result1","#similarity1",image,similarity,"#file1");
             } 
             if (i == 1) {
-                setImage("#result2","#similarity2",image,similarity);
+                setImage("#result2","#similarity2",image,similarity,"#file2");
             }
             if (i == 2) {
-                setImage("#result3", "#similarity3", image,similarity);
+                setImage("#result3", "#similarity3", image,similarity,"#file3");
             }
         }  
     }

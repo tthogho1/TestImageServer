@@ -103,5 +103,5 @@ class ImageAnalysis:
         cos = nn.CosineSimilarity(dim=1, eps=1e-6)
         cos_sim = cos(vector1.unsqueeze(0),
                       vector2.unsqueeze(0))
-        print('\nCosine similarity: {0}\n'.format(cos_sim))
+        # print('\nCosine similarity: {0}\n'.format(cos_sim))
         return cos_sim
