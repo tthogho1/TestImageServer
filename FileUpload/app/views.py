@@ -5,11 +5,11 @@ from django.http import HttpResponse
 from django.template import loader
 import os
 import sys
-import json
+from .cache.featureVector import featureVector
 from .ImageAnalysis import ImageAnalysis
 from django.core.cache import cache
 from django.http import FileResponse
-from threading import Lock
+import faiss
 
 # ------------------------------------------------------------------
 model_kind="resnet50"
@@ -70,33 +70,9 @@ def get_similar_image(request):
                 delete_uploaded_file(file_obj,"tmp/") 
                 break
 
-            imgVectorDictionary = cache.get('imgVector')
-            maxSimilarity = 0
-            l=[]
-            for k, v in imgVectorDictionary.items():
-                result = imageAnalysis.cosineSimilarity(t_vector,v)
-                t_Similarity = result.item()
-                if (k==saveFileNm) :
-                    print(t_Similarity)
-                t_obj ={}
-                t_obj['file']=k
-                t_obj['similarity']=t_Similarity
-                l_obj=None
-                for i in range(3):
-                    try: 
-                        l_obj = l[i]
-                    except IndexError:
-                        pass
-                    if (l_obj == None):
-                        l.insert(i,t_obj)
-                        break
-                    elif ( t_Similarity > l_obj['similarity'] ):
-                        l.insert(i,t_obj)
-                        if len(l) > 3 :
-                            del l[3]
-                        break
+            vector = featureVector()  
+            json_string = vector.get_similar_vector(t_vector)
 
-            json_string = json.dumps(l)
             return HttpResponse(json_string)
         else:
             t_vector=""
@@ -118,7 +94,6 @@ def get_vector(file_obj,model_kind):
 #
 #
 #
-lock = Lock()
 def cache_feature_vector(request):
     str="NG"
     if request.method == 'POST':
@@ -126,20 +101,12 @@ def cache_feature_vector(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             imageAnalysis = ImageAnalysis(model_kind)
+            vector=featureVector()
             for file_obj in request.FILES.getlist('file'): # one file only
                 handle_uploaded_file(file_obj,'media/')
                 imgVector = imageAnalysis.getVector(file_obj.name)
-                if lock.acquire():
-                    try:
-                        imgVectorDictionary = cache.get('imgVector')
-                        if imgVectorDictionary == None:
-                            imgVectorDictionary = {}
-                        imgVectorDictionary[file_obj.name]=imgVector
-                        print(len(imgVectorDictionary))
-                        cache.set('imgVector',imgVectorDictionary)
-                        str="OK"
-                    finally:
-                        lock.release()
+                vector.add_feature_vector(imgVector,file_obj.name)
+                str="OK"
                 break    
     return HttpResponse(str)
 #
@@ -176,4 +143,6 @@ def delete_uploaded_file(file_obj,path):
     file_path = file_obj.name
     os.remove(path + file_path)
 
+def custom_error_404(request,exception):
+    return render(request,'404.html',{})
 
