@@ -51,7 +51,6 @@ def file_download(request,F):
 #
 #
 #
-
 def get_similar_image(request):
 
     if request.method == 'POST':
@@ -72,6 +71,7 @@ def get_similar_image(request):
 
             vector = featureVector()  
             json_string = vector.get_similar_vector(t_vector)
+            # json_string2 = vector.get_similar_vectorByIndex(t_vector)
 
             return HttpResponse(json_string)
         else:
