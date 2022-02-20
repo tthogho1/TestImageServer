@@ -86,8 +86,8 @@ class featureVector:
                     del l[length]
                     break
 
-        json_string = json.dumps(l)
-        return json_string
+        #json_string = json.dumps(l)
+        return l
 
     def get_similar_vectorByIndex(self,t_vector):
         if self._imageDictionary == None :
@@ -113,6 +113,5 @@ class featureVector:
             t_obj['similarity']=str(DList[i])
             l.insert(i,t_obj)
 
-        json_string = json.dumps(l)
-        return json_string
-
+        #json_string = json.dumps(l)
+        return l

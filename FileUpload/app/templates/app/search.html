@@ -31,33 +31,54 @@
     <div>
         <button type="button" id="search-btn" style="float:left;margin-right:10px">search</button>
     </div>
-    <div style="clear:both">
+    <div>
         <form id="search-file" method="POST" enctype="multipart/form-data">
-            <div id="drop-zone" style="text-align: center;width:40%;float:left;border: 1px solid; ">
+            <div id="drop-zone" style="text-align: center;width:40%;border: 1px solid; ">
                 <p> drag and drop image file </p>
                 <div class="left-column" id="preview"></div>
                 <input type="file" name="file" id="file-input" style="display:none" >
             </div>
         </form>
     </div>
-    <div style="clear:both">
-        <label>file1</label><input id="file1" type="text" value="" style="border:0px" readonly/>
-        <label>simmilarity</label><input id="similarity1" type="text" value="" style="border:0px" readonly/>
-        <div>
-        <img id="result1" border="0" src="" style="display:none" />
+    <BR>
+    <div>
+        <div style="float: left;">
+            <label>file11</label><input id="file11" type="text" value="" style="border:0px" readonly/>
+            <label>similarity</label><input id="similarity11" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result11" border="0" src="" style="display:none" />
+            </div>
+            <label>file12</label><input id="file12" type="text" value="" style="border:0px" readonly/>
+            <label>similarity</label><input id="similarity12" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result12" border="0" src="" style="display:none" />
+            </div>
+            <label>file13</label><input id="file13" type="text" value="" style="border:0px" readonly/>
+            <label>similarity</label><input id="similarity13" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result13" border="0" src="" style="display:none" />
+            </div>
         </div>
-        <label>file2</label><input id="file2" type="text" value="" style="border:0px" readonly/>
-        <label>simmilarity</label><input id="similarity2" type="text" value="" style="border:0px" readonly/>
-        <div>
-        <img id="result2" border="0" src="" style="display:none" />
-        </div>
-        <label>file3</label><input id="file3" type="text" value="" style="border:0px" readonly/>
-        <label>simmilarity</label><input id="similarity3" type="text" value="" style="border:0px" readonly/>
-        <div>
-        <img id="result3" border="0" src="" style="display:none" />
-        </div>
+        <div style="float: left;">
+            <label>file21</label><input id="file21" type="text" value="" style="border:0px" readonly/>
+            <label>similarity</label><input id="similarity21" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result21" border="0" src="" style="display:none" />
+            </div>
+            <label>file22</label><input id="file22" type="text" value="" style="border:0px" readonly/>
+            <label>similarity</label><input id="similarity22" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result22" border="0" src="" style="display:none" />
+            </div>
+            <label>file23</label><input id="file23" type="text" value="" style="border:0px" readonly/>
+            <label>similarity</label><input id="similarity23" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result23" border="0" src="" style="display:none" />
+            </div>
 
+        </div>
     </div>
+
 <script type="text/javascript">
 
     var dropZone = document.getElementById('drop-zone');
@@ -145,17 +166,17 @@
         for (i = 0; i < jsonObj.length; i++) {
 
             var obj = jsonObj[i];
-            var image = jsonObj[i].file;
-            var similarity = jsonObj[i].similarity;
             if (i == 0) {
-                setImage("#result1","#similarity1",image,similarity,"#file1");
-            } 
+                setImage("#result11","#similarity11", obj[0].file, obj[0].similarity,"#file11");
+                setImage("#result12","#similarity12", obj[1].file, obj[1].similarity,"#file12");
+                setImage("#result13","#similarity13", obj[2].file, obj[2].similarity,"#file13");
+            }
             if (i == 1) {
-                setImage("#result2","#similarity2",image,similarity,"#file2");
+                setImage("#result21","#similarity21", obj[0].file, obj[0].similarity,"#file21");
+                setImage("#result22","#similarity22", obj[1].file, obj[1].similarity,"#file22");
+                setImage("#result23","#similarity23", obj[2].file, obj[2].similarity,"#file23");
             }
-            if (i == 2) {
-                setImage("#result3", "#similarity3", image,similarity,"#file3");
-            }
+
         }  
     }
 
