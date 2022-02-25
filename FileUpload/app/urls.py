@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf.urls.static import static
+from django.conf import settings
 
 from . import views
 
@@ -9,4 +11,4 @@ urlpatterns = [
     path('cacheFeatureVector', views.cache_feature_vector, name='cache_feature_vector'),
     path('compare', views.compare, name='compare'),
     path('download/<F>', views.file_download, name='file_download'),
-]
+] 

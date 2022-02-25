@@ -2,7 +2,9 @@
 <html lang="ja">
 <head>
 <meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8" />
-<script src="/static/app/scripts/jquery-1.10.2.js"></script>
+<!-- script src="/static/app/scripts/jquery-1.10.2.js"></!--script -->
+<script src="{{ STATIC_URL }}app/scripts/jquery-1.10.2.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <title>ANALYZE IMAGE FILE</title>
 <style media="screen">
 #nowLoading {
@@ -180,8 +182,7 @@
         }  
     }
 
-
-    $(function () {
+    $(function() {
         $('#search-btn').click(function () {
             var form_data = new FormData($('#search-file')[0]);
             var url = '/file_upload/getSimilarImage'; 

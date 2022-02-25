@@ -16,6 +16,24 @@ class featureVector:
 
     def __init__(self):
         print('do init')
+        self._vectorDictionary = cache.get('imgVector')
+        if self._vectorDictionary == None:
+            self._vectorDictionary = {}
+            cache.set('imgVector',self._vectorDictionary)    
+
+        self._imageDictionary = cache.get('imgName')
+        if self._imageDictionary == None:
+            self._imageDictionary = {}
+            cache.set('imgName',self._imageDictionary)
+        self.vector_count = len(self._imageDictionary)
+
+        self._Index = cache.get('faissIndex')
+        if self._Index is None:
+            print('initialize faiss index')
+            self._Index = faiss.IndexFlatL2(self.d)
+            print(self._Index.is_trained)
+            cache.set('faissIndex',self._Index)
+            
 
 
     def __new__(cls):
@@ -29,17 +47,6 @@ class featureVector:
         if self._lock.acquire():
             try:
                 #self._vectorDictionary = cache.get('imgVector')
-                if self._vectorDictionary == None:
-                    self._vectorDictionary = {}
-
-                if self._imageDictionary == None:
-                    self._imageDictionary = {}
-
-                if self._Index is None:
-                    self._Index = faiss.IndexFlatL2(self.d)
-                    print(self._Index.is_trained)
-                    print('initialize faiss index')
-
                 self._vectorDictionary[_name]=imgVector
                 cache.set('imgVector',self._vectorDictionary)
                 # faiss 
