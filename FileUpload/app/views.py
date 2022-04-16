@@ -125,7 +125,7 @@ def compare(request):
             vectorList = []
             for file_obj in request.FILES.getlist('file'):
                 handle_uploaded_file(file_obj,TEMP_FOLDER)
-                imgVector = __get_vector(file_obj,model_kind)
+                imgVector = imageAnalysis.getVector(file_obj.name)
                 vectorList.append(imgVector)
                 delete_uploaded_file(file_obj,TEMP_FOLDER)
 
