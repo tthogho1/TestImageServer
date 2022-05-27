@@ -8,11 +8,11 @@ import numpy as np
 class featureVector:
     _instance = None
     _vectorDictionary = None
-    _imageDictionary = None
+    _imageList = None
     _lock = Lock()
     _Index = None
     d=512 # faiss dimenstion 
-    vector_count=0 # file count
+    # vector_count=0 # file count
 
     def __init__(self):
         print('do init')
@@ -21,11 +21,11 @@ class featureVector:
             self._vectorDictionary = {}
             cache.set('imgVector',self._vectorDictionary)    
 
-        self._imageDictionary = cache.get('imgName')
-        if self._imageDictionary == None:
-            self._imageDictionary = {}
-            cache.set('imgName',self._imageDictionary)
-        self.vector_count = len(self._imageDictionary)
+        self._imageList = cache.get('imgName')
+        if self._imageList == None:
+            self._imageList = []
+            cache.set('imgName',self._imageList)
+        # self.vector_count = len(self._imageDictionary)
 
         self._Index = cache.get('faissIndex')
         if self._Index is None:
@@ -46,26 +46,28 @@ class featureVector:
     def add_feature_vector(self,imgVector,_name):
         if self._lock.acquire():
             try:
-                #self._vectorDictionary = cache.get('imgVector')
-                self._vectorDictionary[_name]=imgVector
-                cache.set('imgVector',self._vectorDictionary)
+                t_vectorDictionary = cache.get('imgVector')
+                t_vectorDictionary[_name]=imgVector
+                cache.set('imgVector',t_vectorDictionary)
                 # faiss 
-                self._imageDictionary[self.vector_count]=_name
-                print(str(self.vector_count) + ":" + _name )
+                t_imageList = cache.get('imgName')
+                t_imageList.append(_name)
+                print(str(len(t_imageList)) + ":" + _name )
+                cache.set('imgName',t_imageList)
 
-                self.vector_count=self.vector_count + 1
+                #self.vector_count=self.vector_count + 1
                 xb = np.array(imgVector).reshape((1,512))
-                self._Index.add(xb)
-                print(self._Index.ntotal)
-                cache.set('imgName',self._imageDictionary)
-                cache.set('faissIndex',self._Index)
+                t_Index = cache.get('faissIndex')
+                t_Index.add(xb)
+                print('Index Size : ' + str(t_Index.ntotal))
+                cache.set('faissIndex',t_Index)
             finally:
                 self._lock.release()
 #
     
     def get_similar_vector(self,t_vector):
-        if self._vectorDictionary == None :
-           self._vectorDictionary = cache.get('imgVector')        
+        #if self._vectorDictionary == None :
+        self._vectorDictionary = cache.get('imgVector')        
            
         imgVectorDictionary = self._vectorDictionary
         model_kind=None # need to set
@@ -97,11 +99,11 @@ class featureVector:
         return l
 
     def get_similar_vectorByIndex(self,t_vector):
-        if self._imageDictionary == None :
-           self._imageDictionary = cache.get('imgName')        
+        # if self._imageList == None :
+        self._imageList = cache.get('imgName')        
 
-        if self._Index == None :
-           self._Index = cache.get('faissIndex')        
+        #if self._Index == None :
+        self._Index = cache.get('faissIndex')        
         
         xb = np.array(t_vector).reshape((1,512))   
         print(self._Index.ntotal)
@@ -116,7 +118,7 @@ class featureVector:
         l=[] # initialize list
         for i in range(3):
             t_obj ={}
-            t_obj['file']=self._imageDictionary.get(IList[i])
+            t_obj['file']=self._imageList[IList[i]]
             t_obj['similarity']=str(DList[i])
             l.insert(i,t_obj)
 

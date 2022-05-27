@@ -6,6 +6,7 @@ from django.template import loader
 import os
 import sys
 import json
+import logging
 from .cache.featureVector import featureVector
 from .cache.AppConfig import AppConfig
 from .ImageAnalysis import ImageAnalysis
@@ -13,6 +14,7 @@ from django.core.cache import cache
 from django.http import FileResponse
 
 # ------------------------------------------------------------------
+logger = logging.getLogger(__name__)
 model_kind="resnet50"
 G_DICTIONARY= {}
 config = AppConfig().get_config()
@@ -30,6 +32,7 @@ def file_upload(request):
             imageAnalysis = ImageAnalysis(model_kind)
             imageAnalysis.set_folder(TEMP_FOLDER)
             #
+            logger.info("file upload start");
             resultList = []
             for file_obj in request.FILES.getlist('file'):
                 handle_uploaded_file(file_obj,TEMP_FOLDER)
