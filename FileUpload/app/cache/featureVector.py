@@ -4,17 +4,30 @@ from app.ImageAnalysis import ImageAnalysis
 import json
 import faiss
 import numpy as np
+import time
 
-class featureVector:
+class FeatureVector:
     _instance = None
     _vectorDictionary = None
     _imageList = None
     _lock = Lock()
     _Index = None
     d=512 # faiss dimenstion 
-    # vector_count=0 # file count
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+      if FeatureVector.__instance == None:
+         FeatureVector()
+      return FeatureVector.__instance
+
 
     def __init__(self):
+        if FeatureVector.__instance != None:
+            raise Exception("Singleton class")
+        else:
+            FeatureVector.__instance = self
+
         print('do init')
         self._vectorDictionary = cache.get('imgVector')
         if self._vectorDictionary == None:
@@ -25,7 +38,6 @@ class featureVector:
         if self._imageList == None:
             self._imageList = []
             cache.set('imgName',self._imageList)
-        # self.vector_count = len(self._imageDictionary)
 
         self._Index = cache.get('faissIndex')
         if self._Index is None:
@@ -33,45 +45,40 @@ class featureVector:
             self._Index = faiss.IndexFlatL2(self.d)
             print(self._Index.is_trained)
             cache.set('faissIndex',self._Index)
-            
 
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-
-        return cls._instance
+#
+#    def __new__(cls):
+#        if cls._instance is None:
+#            cls._instance = super().__new__(cls)
+#
+#        return cls._instance
 
     #
     def add_feature_vector(self,imgVector,_name):
         if self._lock.acquire():
             try:
-                t_vectorDictionary = cache.get('imgVector')
-                t_vectorDictionary[_name]=imgVector
-                cache.set('imgVector',t_vectorDictionary)
+                self._vectorDictionary[_name]=imgVector
+                cache.set('imgVector',self._vectorDictionary)
                 # faiss 
-                t_imageList = cache.get('imgName')
-                t_imageList.append(_name)
-                print(str(len(t_imageList)) + ":" + _name )
-                cache.set('imgName',t_imageList)
+                self._imageList.append(_name)
+                print(str(len(self._imageList)) + ":" + _name )
+                cache.set('imgName',self._imageList)
 
-                #self.vector_count=self.vector_count + 1
                 xb = np.array(imgVector).reshape((1,512))
-                t_Index = cache.get('faissIndex')
-                t_Index.add(xb)
-                print('Index Size : ' + str(t_Index.ntotal))
-                cache.set('faissIndex',t_Index)
+                self._Index.add(xb)
+                print('Index Size : ' + str(self._Index.ntotal))
+                cache.set('faissIndex',self._Index)
             finally:
                 self._lock.release()
 #
     
     def get_similar_vector(self,t_vector):
-        #if self._vectorDictionary == None :
-        self._vectorDictionary = cache.get('imgVector')        
            
         imgVectorDictionary = self._vectorDictionary
         model_kind=None # need to set
         imageAnalysis = ImageAnalysis(model_kind) # model_kind = null
+
+        t_start = time.time() 
 
         l=[] # initialize list
         for i in range(3):
@@ -96,15 +103,17 @@ class featureVector:
                     break
 
         #json_string = json.dumps(l)
+        t_end = time.time() 
+        diff = t_end - t_start
+
+        print("similarity check " + str(diff))
+
         return l
 
     def get_similar_vectorByIndex(self,t_vector):
-        # if self._imageList == None :
-        self._imageList = cache.get('imgName')        
-
-        #if self._Index == None :
-        self._Index = cache.get('faissIndex')        
         
+        t_start = time.time()
+
         xb = np.array(t_vector).reshape((1,512))   
         print(self._Index.ntotal)
 
@@ -123,4 +132,9 @@ class featureVector:
             l.insert(i,t_obj)
 
         #json_string = json.dumps(l)
+        t_end = time.time() 
+        diff = t_end - t_start
+
+        print("distance check " + str(diff))
+
         return l

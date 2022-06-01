@@ -7,7 +7,7 @@ import os
 import sys
 import json
 import logging
-from .cache.featureVector import featureVector
+from .cache.FeatureVector import FeatureVector
 from .cache.AppConfig import AppConfig
 from .ImageAnalysis import ImageAnalysis
 from django.core.cache import cache
@@ -81,7 +81,7 @@ def get_similar_image(request):
             model_kind= request.POST.get('analyze_model',None) # no param
             t_vector,fileName =__get_vector(request,model_kind,TEMP_FOLDER,True)
 
-            vector = featureVector()  
+            vector = FeatureVector.getInstance()  
             cosign = vector.get_similar_vector(t_vector)
             faiss = vector.get_similar_vectorByIndex(t_vector)
             
@@ -111,7 +111,7 @@ def cache_feature_vector(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             imgVector , fileName = __get_vector(request,model_kind,IMAGE_FOLDER,False)
-            vector=featureVector()
+            vector=FeatureVector.getInstance()
             vector.add_feature_vector(imgVector,fileName)
             str="OK"
 
