@@ -7,13 +7,14 @@ import numpy as np
 import time
 
 class FeatureVector:
-    _instance = None
-    _vectorDictionary = None
-    _imageList = None
+    
     _lock = Lock()
-    _Index = None
     d=512 # faiss dimenstion 
     __instance = None
+
+    _vectorDictionary = {}
+    _imageList = []
+    _Index = faiss.IndexFlatL2(d)
 
     @staticmethod
     def getInstance():
@@ -24,34 +25,24 @@ class FeatureVector:
 
     def __init__(self):
         if FeatureVector.__instance != None:
-            raise Exception("Singleton class")
+            raise Exception("FeatureVector is Singleton class")
         else:
             FeatureVector.__instance = self
 
-        print('do init')
+        print('Initializing FeatureVector ...')
         self._vectorDictionary = cache.get('imgVector')
         if self._vectorDictionary == None:
             self._vectorDictionary = {}
-            cache.set('imgVector',self._vectorDictionary)    
 
         self._imageList = cache.get('imgName')
         if self._imageList == None:
             self._imageList = []
-            cache.set('imgName',self._imageList)
 
         self._Index = cache.get('faissIndex')
         if self._Index is None:
             print('initialize faiss index')
             self._Index = faiss.IndexFlatL2(self.d)
             print(self._Index.is_trained)
-            cache.set('faissIndex',self._Index)
-
-#
-#    def __new__(cls):
-#        if cls._instance is None:
-#            cls._instance = super().__new__(cls)
-#
-#        return cls._instance
 
     #
     def add_feature_vector(self,imgVector,_name):
