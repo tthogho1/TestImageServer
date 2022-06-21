@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8" />
+<!-- script src="/static/app/scripts/jquery-1.10.2.js"></!--script -->
+<!-- script src="{{ STATIC_URL }}app/scripts/jquery-1.10.2.js"></!--script -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<title>ANALYZE IMAGE FILE</title>
+<style media="screen">
+#nowLoading {
+  display: table;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #fff;
+  opacity: 0.8;
+}
+ 
+#innerMsg {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  padding-top: 140px;
+  z-index:100;
+  background: url("/static/app/img/38_cycle_forty_24.gif") center center no-repeat;
+}
+</style>
+</head>
+<body>
+    <h3>analyze image file</h3>
+    <div>
+        <button type="button" id="search-btn" style="float:left;margin-right:10px">search</button>
+    </div>
+    <div>
+        <form id="search-file" method="POST" enctype="multipart/form-data">
+            <input type="text" name="imgUrl" id="urlinput" style="font-size:18px;width:80%;border: 1px solid; " value="" />
+            <div id="drop-zone" style="text-align: center;width:50%;height:150px;border: 1px solid; ">
+                <img id="img0" src="" />
+            </div>
+        </form>
+    </div>
+    <BR>
+    <div>
+        <div style="float: left;">
+            <label>file11</label><input id="file11" type="text" value="" style="border:0px" readonly/>
+            <label>similarity</label><input id="similarity11" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result11" border="0" src="" style="display:none" />
+            </div>
+            <label>file12</label><input id="file12" type="text" value="" style="border:0px" readonly/>
+            <label>similarity</label><input id="similarity12" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result12" border="0" src="" style="display:none" />
+            </div>
+            <label>file13</label><input id="file13" type="text" value="" style="border:0px" readonly/>
+            <label>similarity</label><input id="similarity13" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result13" border="0" src="" style="display:none" />
+            </div>
+        </div>
+        <div style="float: left;">
+            <label>file21</label><input id="file21" type="text" value="" style="border:0px" readonly/>
+            <label>distance</label><input id="similarity21" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result21" border="0" src="" style="display:none" />
+            </div>
+            <label>file22</label><input id="file22" type="text" value="" style="border:0px" readonly/>
+            <label>distance</label><input id="similarity22" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result22" border="0" src="" style="display:none" />
+            </div>
+            <label>file23</label><input id="file23" type="text" value="" style="border:0px" readonly/>
+            <label>distance</label><input id="similarity23" type="text" value="" style="border:0px" readonly/>
+            <div>
+            <img id="result23" border="0" src="" style="display:none" />
+            </div>
+
+        </div>
+    </div>
+
+
+<script type="text/javascript">
+    function ajaxPost(url, results, form_data) {
+
+        dispLoading("processing....");
+        document.getElementById('img0').src = $("#urlinput").val() ; 
+
+        $.ajax({
+                type: 'POST',
+                url: url,
+                data: form_data,
+                dataType:'text',
+                contentType: false,
+                cache: false,
+                processData: false,
+                timeout: 30000,
+                async: true
+        }).done((data, textStatus, jqXHR) => {
+            results(data);
+
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            alert("API error " + textStatus);
+        }).always(function (data) {
+            removeLoading();
+        });
+    }
+
+    function setImage(imgid,simid,image,similarity,fileid) {
+        $(imgid).attr("src", './download/' + image);
+        $(imgid).show();
+        $(fileid).val(image);
+        $(simid).val(similarity);
+    }
+
+    function resultSet(data) {
+        let jsonObj = JSON.parse(data);
+
+        for (i = 0; i < jsonObj.length; i++) {
+
+            var obj = jsonObj[i];
+            if (i == 0) {
+                setImage("#result11","#similarity11", obj[0].file, obj[0].similarity,"#file11");
+                setImage("#result12","#similarity12", obj[1].file, obj[1].similarity,"#file12");
+                setImage("#result13","#similarity13", obj[2].file, obj[2].similarity,"#file13");
+            }
+            if (i == 1) {
+                setImage("#result21","#similarity21", obj[0].file, obj[0].similarity,"#file21");
+                setImage("#result22","#similarity22", obj[1].file, obj[1].similarity,"#file22");
+                setImage("#result23","#similarity23", obj[2].file, obj[2].similarity,"#file23");
+            }
+
+        }  
+    }
+
+    $(function() {
+        $('#search-btn').click(function () {
+            var form_data = new FormData($('#search-file')[0]);
+            var url = '/file_upload/getSimilarImageUrl'; 
+
+            ajaxPost(url,resultSet,form_data);
+        });
+    });
+</script>
+<script>
+function dispLoading(msg){
+    if (msg === undefined) {
+        msg = "";
+    }
+    var innerMsg = "<div id='innerMsg'>" + msg + "</div>";  
+  
+    if($("#nowLoading").length == 0){
+        $("body").append("<div id='nowLoading'>" + innerMsg + "</div>");
+    }
+}
+ 
+function removeLoading(){
+    $("#nowLoading").remove();
+}
+</script>
+</body >
+</html>

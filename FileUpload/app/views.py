@@ -1,17 +1,17 @@
-from django.http import HttpResponseRedirect
+#from django.http import HttpResponseRedirect
+import json
+import logging
+import urllib.request
+
 from django.shortcuts import render
 from .forms import UploadFileForm
 from django.http import HttpResponse
 from django.template import loader
-import os
-import sys
-import json
-import logging
 from .cache.FeatureVector import FeatureVector
 from .cache.AppConfig import AppConfig
 from .ImageAnalysis import ImageAnalysis
-from django.core.cache import cache
 from django.http import FileResponse
+from .util.FileUtil import FileUtil
 
 # ------------------------------------------------------------------
 logger = logging.getLogger(__name__)
@@ -35,11 +35,11 @@ def file_upload(request):
             logger.info("file upload start");
             resultList = []
             for file_obj in request.FILES.getlist('file'):
-                handle_uploaded_file(file_obj,TEMP_FOLDER)
+                FileUtil.handleUploadedFile(file_obj,TEMP_FOLDER)
                 result = imageAnalysis.getOutput(file_obj.name)
                 result_dict = {k: v.item() for k, v in result.items()}
                 resultList.append(result_dict)
-                delete_uploaded_file(file_obj,TEMP_FOLDER)
+                FileUtil.deleteUploadedFile(file_obj,TEMP_FOLDER)
             json_str =json.dumps(resultList,ensure_ascii=False)
          
             return HttpResponse(json_str)
@@ -64,13 +64,26 @@ def __get_vector(request,model_kind,folder,deleteFlg):
     imageAnalysis.set_folder(folder)
     imgVector = None
     for file_obj in request.FILES.getlist('file'): # one file only
-        handle_uploaded_file(file_obj,folder)
+        FileUtil.handleUploadedFile(file_obj,folder)
         imgVector = imageAnalysis.getVector(file_obj.name)
         if (deleteFlg) :
-            delete_uploaded_file(file_obj,folder)
+            FileUtil.deleteUploadedFile(file_obj,folder)
         break   
 
     return imgVector,file_obj.name
+#
+#
+#
+def __get_vector_from_data(data,fileName,model_kind,folder,deleteFlg):
+    imageAnalysis = ImageAnalysis(model_kind)
+    imageAnalysis.set_folder(folder)
+    imgVector = None
+    FileUtil.handleUploadedFileByName(data,folder,fileName)
+    imgVector = imageAnalysis.getVector(fileName)
+    if (deleteFlg) :
+        FileUtil.deleteUploadedFileByName(fileName,folder)
+    
+    return imgVector
 #
 #
 def get_similar_image(request):
@@ -102,6 +115,35 @@ def get_similar_image(request):
     return render(request, 'app/search.html', {'form': form})
 #       
 #
+def get_similar_imageUrl(request):
+
+    if request.method == 'POST':
+        model_kind= request.POST.get('analyze_model',None) # no param
+
+        imgUrl = request.POST.get('imgUrl')
+        fileName = imgUrl.split("/")[-1]
+        req = urllib.request.Request(imgUrl)
+        body=None
+        with urllib.request.urlopen(req) as res:
+            body = res.read()
+
+        t_vector = __get_vector_from_data(body,fileName,model_kind,TEMP_FOLDER,True)
+
+        vector = FeatureVector.getInstance()  
+        cosign = vector.get_similar_vector(t_vector)
+        faiss = vector.get_similar_vectorByIndex(t_vector)
+            
+        l=[]
+
+        l.append(cosign)
+        l.append(faiss)
+        json_string = json.dumps(l)
+        print(json_string)
+        return HttpResponse(json_string)
+    #
+    #
+    return render(request, 'app/searchByUrl.html')
+#       
 #
 #
 def cache_feature_vector(request):
@@ -127,28 +169,16 @@ def compare(request):
             imageAnalysis.set_folder(TEMP_FOLDER)
             vectorList = []
             for file_obj in request.FILES.getlist('file'):
-                handle_uploaded_file(file_obj,TEMP_FOLDER)
+                FileUtil.handleUploadedFile(file_obj,TEMP_FOLDER)
                 imgVector = imageAnalysis.getVector(file_obj.name)
                 vectorList.append(imgVector)
-                delete_uploaded_file(file_obj,TEMP_FOLDER)
+                FileUtil.deleteUploadedFile(file_obj,TEMP_FOLDER)
 
             result = imageAnalysis.cosineSimilarity(vectorList[0],vectorList[1])
             str = result.item()
-            #result_dict = {k: v.item() for k, v in result.items()}
-            #json_str =json.dumps(result_dict,ensure_ascii=False);
             return HttpResponse(str)
         
-# ------------------------------------------------------------------
-def handle_uploaded_file(file_obj,path):
-    file_path = file_obj.name 
-    sys.stderr.write(file_path + "\n")
-    with open(path + file_path, 'wb+') as destination:
-        for chunk in file_obj.chunks():
-            destination.write(chunk)
 
-def delete_uploaded_file(file_obj,path):
-    file_path = file_obj.name
-    os.remove(path + file_path)
 
 def custom_error_404(request,exception):
     return render(request,'404.html',{})
