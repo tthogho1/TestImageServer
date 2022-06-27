@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     'app',
     'FileUpload.apps.FileUploadConfig',
+    'corsheaders',
 
     # Add your apps here to enable them
     'django.contrib.admin',
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
 # Middleware framework
 # https://docs.djangoproject.com/en/2.1/topics/http/middleware/
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -159,4 +161,8 @@ LOGGING = {
             'propagate': False,
         },
     },
+
 }
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000', # ここに追加
+]
