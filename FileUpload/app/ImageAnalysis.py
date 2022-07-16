@@ -19,9 +19,14 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from torchvision.datasets.utils import download_url
+from .cache.AppConfig import AppConfig
 
 
 class ImageAnalysis:
+    config = AppConfig().get_config()
+    TEMP_FOLDER = config['image']['temp_image_folder']
+    IMAGE_FOLDER = config['image']['image_folder']
+
     def __init__(self,model_kind):
         self.device = self.get_device(True)
         if model_kind == "resnet50" :
@@ -41,8 +46,8 @@ class ImageAnalysis:
         )
         self.class_names = self.get_classes()
         self.layer = self.model._modules.get('avgpool')
-        self.folder="media/"
-
+        self.folder=IMAGE_FOLDER
+        print("media folder :" + IMAGE_FOLDER)
 
     def set_folder(self,path):
         self.folder=path
